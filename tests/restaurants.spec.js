@@ -46,11 +46,11 @@ async function assertNoOrder(db, id) {
 }
 
 test('list active restaurants matches PostgreSQL @smoke', async ({ api, db }) => {
-  const response = await api.send('GET', { active: 'eq.true', select: '*', order: 'name' }, undefined, 'restaurants');
+  const response = await api.send('GET', { active: 'eq.true', id: `in.(${[1, 2, 3].map(restaurant).join(',')})`, select: '*', order: 'name' }, undefined, 'restaurants');
   expect(response.status()).toBe(200);
   const restaurants = await response.json();
   expect(restaurants).toHaveLength(3);
-  const result = await db.query('select * from public.restaurants where active order by name');
+  const result = await db.query('select * from public.restaurants where active and id = any($1::uuid[]) order by name', [[1, 2, 3].map(restaurant)]);
   expect(restaurants).toEqual(result.rows);
 });
 
