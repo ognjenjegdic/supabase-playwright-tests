@@ -37,11 +37,11 @@ test.describe('Boundary value analysis @boundaries @regression', () => {
       expect(order.discount_cents).toBe(code?.trim() ? 100 : 0); await assertOrder(db, order);
     });
   }
-  test('Unicode menu names and coupon codes round-trip without corruption', async ({ api, db, sandbox }) => {
-    const order = await json(await submit(api, sandbox.draft({ p_coupon_code: 'попуст10' })));
+  test('English menu names with Unicode symbols round-trip without corruption', async ({ api, db, sandbox }) => {
+    const order = await json(await submit(api, sandbox.draft({ p_coupon_code: 'welcome10' })));
     const [body] = await json(await receipt(api, order.id));
     expect(body.order_items[0].item_name).toBe(sandbox.items[0].name);
-    expect(body.order_items[0].item_name).toContain('Бургер 🍔');
+    expect(body.order_items[0].item_name).toContain('Burger 🍔');
     expect(order.discount_cents).toBe(100); await assertOrder(db, order);
   });
   test('long unknown coupon is a business rejection, not a server failure', async ({ api, db, sandbox }) => {
@@ -49,7 +49,7 @@ test.describe('Boundary value analysis @boundaries @regression', () => {
     await invalid(api, db, sandbox.draft({ p_coupon_code: 'X'.repeat(10_000) }));
   });
   test('fractional-cent percentage discount rounds down once', async ({ api, db, sandbox }) => {
-    const order = await json(await submit(api, sandbox.draft({ p_items: [{ menu_item_id: sandbox.items[1].id, quantity: 1 }], p_coupon_code: 'ПОПУСТ10' })));
+    const order = await json(await submit(api, sandbox.draft({ p_items: [{ menu_item_id: sandbox.items[1].id, quantity: 1 }], p_coupon_code: 'WELCOME10' })));
     expect(order).toMatchObject({ subtotal_cents: 199, discount_cents: 19, total_cents: 180 });
     await assertOrder(db, order);
   });

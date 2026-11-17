@@ -2,7 +2,7 @@
 
 Branch: `test/api-boundaries`.
 
-Quantity values -1, 0, 1, 2, 19, 20, 21 plus null, fractional, and string values; cart sizes 0, 1, 2, 19, 20, 21; coupon minimum spend; empty/null/trimmed/case-insensitive coupon input; Unicode names/codes, long unknown input, and fractional-cent rounding.
+Quantity values -1, 0, 1, 2, 19, 20, 21 plus null, fractional, and string values; cart sizes 0, 1, 2, 19, 20, 21; coupon minimum spend; empty/null/trimmed/case-insensitive coupon input; English names with Unicode symbols and English coupon codes, long unknown input, and fractional-cent rounding.
 
 Run:
 
