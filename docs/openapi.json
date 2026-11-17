@@ -1,0 +1,1871 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Restaurant Practice API",
+    "version": "1.0.0",
+    "description": "Supabase/PostgREST backend for a restaurant testing sandbox. Demo brands, fictional prices, and simulated card payments. All amounts are integer USD cents. Includes legacy booking exercises. This specification documents the supported workflow and test cleanup; elevated service-role table grants also permit administrative raw CRUD, which is intentionally not a checkout interface. Local Swagger proxies supported calls and injects credentials server-side. For direct server-side calls use the apikey header; never put a backend secret in a browser."
+  },
+  "servers": [
+    {
+      "url": "https://{projectRef}.supabase.co/rest/v1",
+      "variables": {
+        "projectRef": {
+          "default": "YOUR_PROJECT_REF"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Browse"
+    },
+    {
+      "name": "Checkout"
+    },
+    {
+      "name": "Orders"
+    },
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Legacy bookings"
+    }
+  ],
+  "security": [
+    {
+      "SupabaseApiKey": []
+    }
+  ],
+  "paths": {
+    "/restaurants": {
+      "get": {
+        "tags": [
+          "Browse"
+        ],
+        "operationId": "list_restaurants",
+        "summary": "List restaurants",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Filter active restaurants.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.true"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "name.asc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Restaurant"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/menu_items": {
+      "get": {
+        "tags": [
+          "Browse"
+        ],
+        "operationId": "list_menu_items",
+        "summary": "Browse a restaurant menu",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "restaurant_id",
+            "in": "query",
+            "description": "Select a restaurant.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.10000000-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "available",
+            "in": "query",
+            "description": "Filter availability.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.true"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter main, side, or drink.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.main"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "name.asc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenuItem"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/coupons": {
+      "get": {
+        "tags": [
+          "Browse"
+        ],
+        "operationId": "list_coupons",
+        "summary": "List restaurant coupons",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "restaurant_id",
+            "in": "query",
+            "description": "Select a restaurant.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.10000000-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "description": "Active flag only; checkout also checks expiry and minimum spend.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.true"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "code.asc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Coupon"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "list_orders",
+        "summary": "List orders or find a receipt",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>. For a full receipt set select=*,order_items(*),payments(*). payments is a single object because each order has at most one payment.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter a specific order UUID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "order_number",
+            "in": "query",
+            "description": "Filter by receipt number.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.7"
+          },
+          {
+            "name": "restaurant_id",
+            "in": "query",
+            "description": "Filter restaurant.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.10000000-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter paid or payment_failed.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.paid"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at.desc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/Order"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Receipt"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "delete_orders",
+        "summary": "Delete one demo order and its items/payment",
+        "description": "Administrative test cleanup only. Require an exact id filter. With return=representation, response is an array of deleted rows; [] if already absent. Without Prefer, successful deletion returns 204. The local proxy refuses unfiltered deletes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Exact UUID filter; never delete without a filter.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "Prefer",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "return=representation"
+            },
+            "description": "Use return=representation for a JSON response. Without it, writes default to minimal responses."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Deleted; no response body when return=minimal is used."
+          }
+        }
+      }
+    },
+    "/order_items": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "list_order_items",
+        "summary": "Get purchased items",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "Filter order UUID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "menu_item_id.asc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderItem"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "operationId": "list_payments",
+        "summary": "Get simulated payment results",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "Filter order UUID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter approved or declined.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.approved"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at.desc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pw_bookings": {
+      "get": {
+        "tags": [
+          "Legacy bookings"
+        ],
+        "operationId": "list_pw_bookings",
+        "summary": "List legacy practice bookings",
+        "description": "Returns an array; no matches returns HTTP 200 with []. Filters use PostgREST syntax such as eq.<value>.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter booking UUID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Sort by column.asc or column.desc.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "id.asc"
+          },
+          {
+            "name": "select",
+            "in": "query",
+            "description": "PostgREST projection. Response schemas show full rows; selecting fewer fields changes the shape.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "*"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum rows returned.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Rows to skip, used with a deterministic order.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Legacy bookings"
+        ],
+        "operationId": "delete_pw_bookings",
+        "summary": "Delete a legacy booking",
+        "description": "Administrative test cleanup only. Require an exact id filter. With return=representation, response is an array of deleted rows; [] if already absent. Without Prefer, successful deletion returns 204. The local proxy refuses unfiltered deletes.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Exact UUID filter; never delete without a filter.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          },
+          {
+            "name": "Prefer",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "return=representation"
+            },
+            "description": "Use return=representation for a JSON response. Without it, writes default to minimal responses."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Deleted; no response body when return=minimal is used."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Legacy bookings"
+        ],
+        "operationId": "post_booking",
+        "summary": "Create a legacy booking",
+        "parameters": [
+          {
+            "name": "Prefer",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "return=representation"
+            },
+            "description": "Use return=representation for a JSON response. Without it, writes default to minimal responses."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Minimal response when return=representation is omitted."
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Legacy bookings"
+        ],
+        "operationId": "patch_booking",
+        "summary": "Update a legacy booking",
+        "parameters": [
+          {
+            "name": "Prefer",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "return=representation"
+            },
+            "description": "Use return=representation for a JSON response. Without it, writes default to minimal responses."
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Exact booking UUID filter.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "eq.00000000-0000-4000-8000-000000000000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Booking"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Minimal response when return=representation is omitted."
+          }
+        }
+      }
+    },
+    "/rpc/place_order": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "operationId": "place_order",
+        "summary": "Place an order with optional coupon and simulated card",
+        "description": "Atomically inserts order, item snapshots, and one simulated payment. Prices come from the database. Discounts round down to cents. A declined card returns HTTP 200 with status payment_failed; it does not mean payment succeeded. Invalid carts or coupons create no partial records. This is not a real payment gateway.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Checkout"
+              },
+              "examples": {
+                "approved": {
+                  "summary": "Two burgers with SAVE10; $11.98 subtotal, $1.19 discount, $10.79 total",
+                  "value": {
+                    "p_order_id": "00000000-0000-4000-8000-000000000000",
+                    "p_restaurant_id": "10000000-0000-4000-8000-000000000001",
+                    "p_items": [
+                      {
+                        "menu_item_id": "20000000-0000-4000-8000-000000000001",
+                        "quantity": 2
+                      }
+                    ],
+                    "p_coupon_code": "SAVE10",
+                    "p_test_card": "test_card_approved"
+                  }
+                },
+                "declined": {
+                  "summary": "Record a declined test payment",
+                  "value": {
+                    "p_order_id": "00000000-0000-4000-8000-000000000000",
+                    "p_restaurant_id": "10000000-0000-4000-8000-000000000001",
+                    "p_items": [
+                      {
+                        "menu_item_id": "20000000-0000-4000-8000-000000000001",
+                        "quantity": 1
+                      }
+                    ],
+                    "p_test_card": "test_card_declined"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid filter, input, or business rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate identifier or constraint conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SupabaseApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apikey",
+        "description": "Backend sb_secret_ key. Do not enter this key in browser Swagger. The local docs server injects it securely from .env."
+      }
+    },
+    "schemas": {
+      "Restaurant": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "currency",
+          "active"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MenuItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "restaurant_id",
+          "name",
+          "category",
+          "price_cents",
+          "available"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "main",
+              "side",
+              "drink"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Coupon": {
+        "type": "object",
+        "required": [
+          "id",
+          "restaurant_id",
+          "code",
+          "percent_off",
+          "minimum_cents",
+          "active",
+          "expires_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "percent_off": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "minimum_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "restaurant_id",
+          "coupon_id",
+          "status",
+          "currency",
+          "subtotal_cents",
+          "discount_cents",
+          "total_cents",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_number": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Automatically assigned globally unique number; gaps are normal."
+          },
+          "restaurant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coupon_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "paid",
+              "payment_failed"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD"
+            ]
+          },
+          "subtotal_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "discount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "menu_item_id",
+          "item_name",
+          "quantity",
+          "unit_price_cents",
+          "line_total_cents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "menu_item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "item_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "unit_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "line_total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "amount_cents",
+          "status",
+          "provider",
+          "card_brand",
+          "card_last4",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Integer USD cents; 599 means $5.99."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "declined"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "simulated"
+            ]
+          },
+          "card_brand": {
+            "type": "string"
+          },
+          "card_last4": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Receipt": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Order"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "order_items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderItem"
+                }
+              },
+              "payments": {
+                "$ref": "#/components/schemas/Payment"
+              }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details",
+          "hint"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string",
+            "nullable": true
+          },
+          "hint": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BookingInput": {
+        "type": "object",
+        "required": [
+          "id",
+          "firstname",
+          "lastname",
+          "totalprice",
+          "depositpaid",
+          "checkin",
+          "checkout"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "totalprice": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "depositpaid": {
+            "type": "boolean"
+          },
+          "checkin": {
+            "type": "string",
+            "format": "date"
+          },
+          "checkout": {
+            "type": "string",
+            "format": "date",
+            "description": "Must be after checkin."
+          },
+          "additionalneeds": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Booking": {
+        "$ref": "#/components/schemas/BookingInput"
+      },
+      "BookingPatch": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "totalprice": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "depositpaid": {
+            "type": "boolean"
+          },
+          "checkin": {
+            "type": "string",
+            "format": "date"
+          },
+          "checkout": {
+            "type": "string",
+            "format": "date",
+            "description": "Must be after checkin."
+          },
+          "additionalneeds": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Checkout": {
+        "type": "object",
+        "required": [
+          "p_order_id",
+          "p_restaurant_id",
+          "p_items"
+        ],
+        "properties": {
+          "p_order_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "New UUID per checkout. Reusing it returns 409. In local Swagger only, the all-zero placeholder is replaced with a fresh UUID on Execute."
+          },
+          "p_restaurant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "p_items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "required": [
+                "menu_item_id",
+                "quantity"
+              ],
+              "properties": {
+                "menu_item_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              }
+            },
+            "description": "Distinct available menu items from the chosen restaurant. Prices are looked up server-side."
+          },
+          "p_coupon_code": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "One reusable restaurant coupon; blank/null means no coupon. Case-insensitive; whitespace trimmed."
+          },
+          "p_test_card": {
+            "type": "string",
+            "enum": [
+              "test_card_approved",
+              "test_card_declined"
+            ],
+            "default": "test_card_approved",
+            "description": "Simulation only. Do not send card numbers or real payment data."
+          }
+        }
+      }
+    }
+  }
+}
