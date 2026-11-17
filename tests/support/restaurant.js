@@ -10,7 +10,7 @@ export const test = base.extend({
     const restaurant = { id: randomUUID(), name: `QA restaurant ${randomUUID()}`, currency: 'USD', active: true };
     const items = Array.from({ length: 22 }, (_, i) => ({
       id: randomUUID(), restaurant_id: restaurant.id,
-      name: `${i === 0 ? 'Бургер 🍔' : `Item ${i}`} ${randomUUID()}`,
+      name: `${i === 0 ? 'Burger 🍔' : `Item ${i}`} ${randomUUID()}`,
       category: i % 3 === 0 ? 'main' : i % 3 === 1 ? 'side' : 'drink',
       price_cents: i === 1 ? 199 : 100, available: i < 21,
     }));
@@ -18,7 +18,7 @@ export const test = base.extend({
       { code: 'TEN', percent_off: 10, minimum_cents: 1000, active: true, expires_at: '2099-01-01T00:00:00Z' },
       { code: 'EXPIRED', percent_off: 10, minimum_cents: 0, active: true, expires_at: '2020-01-01T00:00:00Z' },
       { code: 'DISABLED', percent_off: 10, minimum_cents: 0, active: false, expires_at: '2099-01-01T00:00:00Z' },
-      { code: 'ПОПУСТ10', percent_off: 10, minimum_cents: 0, active: true, expires_at: '2099-01-01T00:00:00Z' },
+      { code: 'WELCOME10', percent_off: 10, minimum_cents: 0, active: true, expires_at: '2099-01-01T00:00:00Z' },
     ].map(c => ({ id: randomUUID(), restaurant_id: restaurant.id, ...c }));
     const orderIds = new Set();
     const sandbox = {
