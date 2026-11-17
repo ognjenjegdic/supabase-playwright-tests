@@ -2,6 +2,12 @@
 
 Playwright + JavaScript tests compare Supabase REST responses against PostgreSQL rows queried independently through `pg`. No browser download is required. This is separate from the Restful Booker project.
 
+The project now includes a **restaurant ordering sandbox** with six related tables, menus, coupons, order numbers, and simulated card payments. See [RESTAURANTS.md](RESTAURANTS.md) for setup, API examples, and database queries. Run `npm run test:restaurants` for its 22 tests, or `npm test` for all 28 tests.
+
+## Swagger API documentation
+
+Run `npm run docs` and open http://127.0.0.1:3000 for interactive endpoint documentation and live examples. The local proxy keeps the backend key out of the browser. See [docs/API.md](docs/API.md) or import [docs/openapi.json](docs/openapi.json) into OpenAPI tooling.
+
 ## 1. Create a free Supabase project
 
 1. Sign in at https://supabase.com/dashboard and choose **New project**.

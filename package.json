@@ -12,11 +12,19 @@
     "test": "playwright test",
     "test:list": "playwright test --list",
     "test:smoke": "playwright test --grep @smoke",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "setup:restaurants": "node scripts/setup-restaurants.js",
+    "test:restaurants": "playwright test restaurants.spec.js",
+    "demo:orders": "node scripts/demo-orders.js",
+    "docs": "node scripts/docs-server.js",
+    "docs:validate": "node scripts/validate-openapi.js",
+    "test:docs": "node --test scripts/docs-server.test.js"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "13.1.0",
     "@playwright/test": "1.65.1",
     "dotenv": "18.0.10",
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "swagger-ui-dist": "5.35.0"
   }
 }
