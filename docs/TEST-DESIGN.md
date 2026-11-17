@@ -15,6 +15,8 @@ On any category branch: `npm ci`, configure `.env` and certificate as in README,
 
 ## Test design
 
+All persistent demo and generated fixture text uses English. Unicode coverage uses English menu names with emoji; coupon codes use English words.
+
 - Arrange–Act–Assert, data-driven equivalence partitions, boundary value analysis, and coupon/payment decision tables.
 - Ajv validates the published OpenAPI response schemas, including UUID/date formats, required properties, types, and enums. This is provider response-contract validation, not a separate consumer-driven contract such as Pact. Schemas do not currently forbid all additional properties, so security tests separately check sensitive fields.
 - Assertions include status, Content-Type, business results, relational counts/totals, read-after-write visibility, and cleanup. No automatic test retries, arbitrary sleeps, or execution-order assumptions.
