@@ -101,3 +101,7 @@ The tests use real network connections. They do not silently skip when credentia
 - https://supabase.com/docs/guides/database/postgres/row-level-security
 - https://node-postgres.com/features/ssl
 - https://playwright.dev/docs/api-testing
+
+## Test design categories
+
+See [docs/TEST-DESIGN.md](docs/TEST-DESIGN.md) for the six category branches, design techniques, fixtures, and explicit capability gaps. On a category branch, run `npm run test:categories`.
